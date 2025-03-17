@@ -1,0 +1,208 @@
+{% extends 'complaints/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 text-center mb-5">
+        <h1 class="display-4 mb-4">Welcome to Truth Vault</h1>
+        <p class="lead">A safe and anonymous platform for students to voice their concerns</p>
+    </div>
+</div>
+
+{% if user.is_authenticated %}
+{% if not has_student_profile %}
+<div class="alert alert-warning mb-4">
+    <i class="fas fa-exclamation-triangle me-2"></i>You need to complete your student profile to submit complaints and
+    vote on class-specific complaints.
+    <a href="{% url 'student_profile' %}" class="btn btn-sm btn-primary ms-3">Complete Profile</a>
+</div>
+{% endif %}
+
+{% if complaints %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title mb-4">Complaints Feed</h3>
+                {% for complaint in complaints %}
+                <div
+                    class="complaint-card mb-4 p-3 border rounded {% if complaint.visibility == 'CLASS' %}bg-light{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h4>{{ complaint.title }}</h4>
+                            <p class="text-muted mb-2">
+                                <small>
+                                    {{ complaint.get_category_display }} |
+                                    {{ complaint.created_at|date:"F d, Y" }} |
+                                    Status: {{ complaint.get_status_display }} |
+                                    Visibility: {{ complaint.get_visibility_display }}
+                                </small>
+                            </p>
+                            <p class="mb-3">{{ complaint.description }}</p>
+                        </div>
+                        {% if complaint.visibility == 'CLASS' and complaint.student_class == user.student.student_class %}
+                        <div class="voting-section text-center">
+                            <p class="mb-2">Votes: {{ complaint.get_vote_percentage|floatformat:1 }}%</p>
+                            <form method="post" action="{% url 'vote_complaint' complaint.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="vote_type" value="upvote">
+                                <button type="submit" class="btn btn-sm btn-success me-2">
+                                    <i class="fas fa-thumbs-up"></i> Upvote
+                                </button>
+                            </form>
+                            <form method="post" action="{% url 'vote_complaint' complaint.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="vote_type" value="downvote">
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-thumbs-down"></i> Downvote
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% if complaint.admin_response %}
+                    <div class="admin-response mt-3 p-3 bg-light rounded">
+                        <h5 class="text-primary">Admin Response:</h5>
+                        <p class="mb-0">{{ complaint.admin_response }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">
+    No complaints to display yet.
+</div>
+{% endif %}
+{% else %}
+<div class="card mb-4">
+    <div class="card-body text-center p-4">
+        <i class="fas fa-lock fa-3x text-secondary mb-3"></i>
+        <h3>Please Log In or Register</h3>
+        <p class="lead mb-4">To view class-specific complaints and participate in voting, you need to have an account
+            and be logged in.</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{% url 'login' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-sign-in-alt me-2"></i>Log In
+            </a>
+            <a href="{% url 'register' %}" class="btn btn-success btn-lg">
+                <i class="fas fa-user-plus me-2"></i>Register
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if complaints %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title mb-4">Public Complaints</h3>
+                {% for complaint in complaints %}
+                <div class="complaint-card mb-4 p-3 border rounded">
+                    <div>
+                        <h4>{{ complaint.title }}</h4>
+                        <p class="text-muted mb-2">
+                            <small>
+                                {{ complaint.get_category_display }} |
+                                {{ complaint.created_at|date:"F d, Y" }} |
+                                Status: {{ complaint.get_status_display }}
+                            </small>
+                        </p>
+                        <p class="mb-3">{{ complaint.description }}</p>
+                    </div>
+                    {% if complaint.admin_response %}
+                    <div class="admin-response mt-3 p-3 bg-light rounded">
+                        <h5 class="text-primary">Admin Response:</h5>
+                        <p class="mb-0">{{ complaint.admin_response }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">
+    No public complaints to display yet.
+</div>
+{% endif %}
+{% endif %}
+
+<div class="row justify-content-center g-4">
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-edit fa-3x mb-3 text-primary"></i>
+                <h3 class="card-title">Submit Complaint</h3>
+                <p class="card-text">Share your concerns anonymously with the administration. Your voice matters.</p>
+                {% if user.is_authenticated %}
+                <a href="{% url 'submit_complaint' %}" class="btn btn-primary">Submit Now</a>
+                {% else %}
+                <a href="{% url 'login' %}" class="btn btn-primary">Login to Submit</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-search fa-3x mb-3 text-primary"></i>
+                <h3 class="card-title">Track Complaint</h3>
+                <p class="card-text">Check the status of your complaint using your tracking ID.</p>
+                <a href="{% url 'track_complaint' %}" class="btn btn-primary">Track Status</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title text-center mb-4">How It Works</h4>
+                <div class="d-flex align-items-center mb-3">
+                    <div class="me-3">
+                        <i class="fas fa-1 fa-lg text-primary"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">Submit Your Complaint</h5>
+                        <p class="mb-0">Fill out the complaint form with detailed information about your concern.</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center mb-3">
+                    <div class="me-3">
+                        <i class="fas fa-2 fa-lg text-primary"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">Class Review</h5>
+                        <p class="mb-0">Your classmates can vote on the legitimacy of your complaint.</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center mb-3">
+                    <div class="me-3">
+                        <i class="fas fa-3 fa-lg text-primary"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">Public Visibility</h5>
+                        <p class="mb-0">Complaints with 60% positive votes become visible to everyone.</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="fas fa-4 fa-lg text-primary"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">Track Progress</h5>
+                        <p class="mb-0">Use your tracking ID to check the status and updates on your complaint.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

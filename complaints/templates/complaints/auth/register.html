@@ -1,0 +1,86 @@
+{% extends 'complaints/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h3 class="mb-0">Register</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label for="id_username" class="form-label">Username</label>
+                        {{ form.username.errors }}
+                        <input type="text" name="username"
+                            class="form-control {% if form.username.errors %}is-invalid{% endif %}" id="id_username"
+                            required>
+                        {% if form.username.help_text %}
+                        <small class="form-text text-muted">{{ form.username.help_text }}</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_email" class="form-label">Email</label>
+                        {{ form.email.errors }}
+                        <input type="email" name="email"
+                            class="form-control {% if form.email.errors %}is-invalid{% endif %}" id="id_email" required>
+                        {% if form.email.help_text %}
+                        <small class="form-text text-muted">{{ form.email.help_text }}</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_password1" class="form-label">Password</label>
+                        {{ form.password1.errors }}
+                        <input type="password" name="password1"
+                            class="form-control {% if form.password1.errors %}is-invalid{% endif %}" id="id_password1"
+                            required>
+                        {% if form.password1.help_text %}
+                        <small class="form-text text-muted">{{ form.password1.help_text }}</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_password2" class="form-label">Confirm Password</label>
+                        {{ form.password2.errors }}
+                        <input type="password" name="password2"
+                            class="form-control {% if form.password2.errors %}is-invalid{% endif %}" id="id_password2"
+                            required>
+                        {% if form.password2.help_text %}
+                        <small class="form-text text-muted">{{ form.password2.help_text }}</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success">Register</button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                <p class="mb-0">Already have an account? <a href="{% url 'login' %}">Log in here</a></p>
+            </div>
+        </div>
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            {% for error in form.non_field_errors %}
+            <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

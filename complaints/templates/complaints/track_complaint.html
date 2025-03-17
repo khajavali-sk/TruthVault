@@ -1,0 +1,72 @@
+{% extends 'complaints/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title text-center mb-4">Track Your Complaint</h2>
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label for="tracking_id" class="form-label">Enter Your Tracking ID</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control form-control-lg" id="tracking_id" name="tracking_id"
+                                placeholder="e.g., ABC123XY" required>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>Track
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if complaint %}
+        <div class="card mt-4">
+            <div class="card-body">
+                <h3 class="card-title mb-4">Complaint Details</h3>
+                <div class="mb-3">
+                    <h5 class="text-muted mb-2">Status</h5>
+                    <span class="badge bg-{% if complaint.status == 'PENDING' %}warning
+                                         {% elif complaint.status == 'IN_PROGRESS' %}info
+                                         {% elif complaint.status == 'RESOLVED' %}success
+                                         {% else %}danger{% endif %} p-2">
+                        {{ complaint.status }}
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <h5 class="text-muted mb-2">Title</h5>
+                    <p>{{ complaint.title }}</p>
+                </div>
+
+                <div class="mb-3">
+                    <h5 class="text-muted mb-2">Category</h5>
+                    <p>{{ complaint.get_category_display }}</p>
+                </div>
+
+                <div class="mb-3">
+                    <h5 class="text-muted mb-2">Description</h5>
+                    <p>{{ complaint.description }}</p>
+                </div>
+
+                <div class="mb-3">
+                    <h5 class="text-muted mb-2">Submitted On</h5>
+                    <p>{{ complaint.created_at|date:"F d, Y" }}</p>
+                </div>
+
+                {% if complaint.admin_response %}
+                <div class="mb-3">
+                    <h5 class="text-muted mb-2">Admin Response</h5>
+                    <div class="alert alert-info">
+                        {{ complaint.admin_response }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

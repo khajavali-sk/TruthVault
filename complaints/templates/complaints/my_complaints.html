@@ -1,0 +1,126 @@
+{% extends 'complaints/base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2 class="mb-3">My Complaints</h2>
+        <p class="lead">View and track all the complaints you've submitted</p>
+    </div>
+</div>
+
+{% if not has_student_profile %}
+<div class="alert alert-warning">
+    <i class="fas fa-exclamation-triangle me-2"></i>You need to complete your student profile first.
+    <a href="{% url 'student_profile' %}" class="btn btn-sm btn-primary ms-3">Complete Profile</a>
+</div>
+{% else %}
+{% if complaints %}
+<div class="row mb-3">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Filter by Status</h5>
+                <div class="btn-group" role="group" aria-label="Filter complaints">
+                    <button type="button" class="btn btn-outline-primary filter-btn active"
+                        data-filter="all">All</button>
+                    <button type="button" class="btn btn-outline-primary filter-btn"
+                        data-filter="PENDING">Pending</button>
+                    <button type="button" class="btn btn-outline-primary filter-btn"
+                        data-filter="REVIEWED">Reviewed</button>
+                    <button type="button" class="btn btn-outline-primary filter-btn"
+                        data-filter="RESOLVED">Resolved</button>
+                    <button type="button" class="btn btn-outline-primary filter-btn"
+                        data-filter="REJECTED">Rejected</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        {% for complaint in complaints %}
+        <div class="card mb-4 complaint-item" data-status="{{ complaint.status }}">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ complaint.title }}</h5>
+                <span class="badge {% if complaint.status == 'PENDING' %}bg-warning
+                                        {% elif complaint.status == 'REVIEWED' %}bg-info
+                                        {% elif complaint.status == 'RESOLVED' %}bg-success
+                                        {% elif complaint.status == 'REJECTED' %}bg-danger
+                                        {% endif %}">
+                    {{ complaint.get_status_display }}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <p class="text-muted small">
+                        <strong>Tracking ID:</strong> {{ complaint.tracking_id }} |
+                        <strong>Category:</strong> {{ complaint.get_category_display }} |
+                        <strong>Submitted:</strong> {{ complaint.created_at|date:"F d, Y" }} |
+                        <strong>Visibility:</strong> {{ complaint.get_visibility_display }}
+                    </p>
+                </div>
+                <p class="card-text">{{ complaint.description }}</p>
+
+                {% if complaint.visibility == 'CLASS' %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Current voting: {{ complaint.get_vote_percentage|floatformat:1 }}% positive
+                    {% if complaint.get_vote_percentage >= 60 %}
+                    (This complaint will soon be made public)
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                {% if complaint.admin_response %}
+                <div class="admin-response mt-3 p-3 bg-light rounded">
+                    <h6 class="text-primary">Admin Response:</h6>
+                    <p class="mb-0">{{ complaint.admin_response }}</p>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer text-muted">
+                <a href="{% url 'track_complaint' %}?tracking_id={{ complaint.tracking_id }}"
+                    class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-search me-1"></i>Detailed Tracking
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const filterButtons = document.querySelectorAll('.filter-btn');
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                // Remove active class from all buttons
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+
+                // Add active class to clicked button
+                this.classList.add('active');
+
+                const filter = this.getAttribute('data-filter');
+                const complaints = document.querySelectorAll('.complaint-item');
+
+                complaints.forEach(item => {
+                    if (filter === 'all' || item.getAttribute('data-status') === filter) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        });
+    });
+</script>
+{% else %}
+<div class="alert alert-info">
+    <i class="fas fa-info-circle me-2"></i>You haven't submitted any complaints yet.
+    <a href="{% url 'submit_complaint' %}" class="btn btn-sm btn-primary ms-3">Submit a Complaint</a>
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}
