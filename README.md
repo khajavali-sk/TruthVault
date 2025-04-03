@@ -41,7 +41,7 @@ TruthVault is a secure and anonymous complaint management system designed specif
 
 1️⃣ **Clone the Repository:**  
 ```bash
-git clone https://github.com/yourusername/truthvault.git
+git clone [https://github.com/yourusername/truthvault.git](https://github.com/khajavali-sk/TruthVault.git)
 cd truthvault
 ```
 
